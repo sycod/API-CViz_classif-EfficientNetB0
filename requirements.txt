@@ -10,12 +10,11 @@ pytest                  # unit tests
 pytest-cov              # unit tests, cover a specific function
 python-dotenv           # Environment variables
 pyyaml                  # YAML support
-requests                # HTTP requests
 scikit-learn            # ML must-have
 seaborn                 # plots
 streamlit               # cool Python GUI
 tarfile                 # tar archives
-tensorflow              # DL, CPU only
+# tensorflow              # DL, CPU only
 tensorflow[and-cuda]    # DL with GPU
 # torch                   # DL (pytorch)
 # transformers            # Hugging Face (models, etc.)
