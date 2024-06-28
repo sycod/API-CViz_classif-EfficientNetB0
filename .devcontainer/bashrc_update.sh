@@ -4,7 +4,7 @@
 #     used in separate file because of quotes in echo command
 
 # activate Python virtual environment on startup
-echo "source ~/.env/bin/activate" >> ~/.bashrc
+echo "source ~/.venv/bin/activate" >> ~/.bashrc
 
 # aliases
 echo "alias ll='ls -alFh'" >> ~/.bashrc
