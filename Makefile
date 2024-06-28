@@ -2,8 +2,7 @@ install:
 	@pip install --upgrade pip && pip install -r requirements.txt
 
 lint:
-	pylint --disable=R,C,logging-fstring-interpolation,f-string-without-interpolation --fail-under=7.0 src/*.py
-
+	pylint --disable=R,C,logging-fstring-interpolation,f-string-without-interpolation --fail-under=7.0 src/*.py *.py *.ipynb 
 
 test:
 	# --cov=my_function test_*.py for details on a function
@@ -16,13 +15,6 @@ test:
 
 format:
 	# --force-exclude '<FILE_OR_FOLDER>' if needed (env, imported, models...)
-	@black *.py *.ipynb
+	@black src/*.py *.py *.ipynb
 
 all: install lint test format
-
-# personal and not click-setup-installed commands
-api_launch:
-	python $(CURDIR)/blueprint_fast_api.py
-
-mlflow_run:
-	python mlflow_folder/my_mlf_script.py && mlflow ui
