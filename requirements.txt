@@ -13,8 +13,8 @@ pyyaml                  # YAML support
 scikit-learn            # ML must-have
 seaborn                 # plots
 streamlit               # cool Python GUI
-tarfile                 # tar archives
+# tarfile                 # tar archives
 # tensorflow              # DL, CPU only
-tensorflow[and-cuda]    # DL with GPU
+# tensorflow[and-cuda]    # DL with GPU
 # torch                   # DL (pytorch)
 # transformers            # Hugging Face (models, etc.)
