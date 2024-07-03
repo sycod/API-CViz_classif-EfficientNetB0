@@ -44,10 +44,6 @@ def create_img_db(img_dir, annot_dir, output_uri) -> pd.DataFrame:
         "ymin",
         "xmax",
         "ymax",
-        "truncated",
-        "segment",
-        "pose",
-        "difficult",
     ]
 
     # read inside each breed folder
@@ -68,25 +64,16 @@ def create_img_db(img_dir, annot_dir, output_uri) -> pd.DataFrame:
             with open(os.path.join(annot_dir, breed, annot), 'r', encoding='utf-8') as f:
                 annot_content = f.read()
 
-            # loop over features
+            # loop over features & store regex result in a list
             for tag in annot_tags:
-                # regex pattern
                 pattern = f'<{tag}>(.*?)</{tag}>'
-                # store result in a list
-                annot_infos.append(re.search(pattern, annot_content, re.DOTALL).group(1))
+                result = re.search(pattern, annot_content, re.DOTALL).group(1)
+                # bad filenames == "%s" (ID) -> replace by ID available in img_uri
+                if tag == "filename" and result == "%s":
+                    result = img_uri.split("/")[-1][:-4]
+
+                annot_infos.append(result)
                 
-                
-                # 🚧 treat  == "%s"
-                # 🚧 treat  == "%s"
-                # 🚧 treat  == "%s"
-                # 🚧 treat  == "%s"
-                # 🚧 treat  == "%s"
-                # 🚧 treat  == "%s"
-                # 🚧 treat  == "%s"
-                # 🚧 treat  == "%s"
-
-
-
             # add image URI
             annot_infos.append(img_uri)
             
@@ -104,13 +91,13 @@ def create_img_db(img_dir, annot_dir, output_uri) -> pd.DataFrame:
         "bb_ymin",
         "bb_xmax",
         "bb_ymax",
-        "truncated",
-        "segment",
-        "pose",
-        "difficult",
         "img_uri",
     ]
     df = pd.DataFrame(annot_infos_list, columns=db_cols)
+
+    # set to numeric values
+    num_cols = ["width", "height", "depth", "bb_xmin", "bb_ymin", "bb_xmax", "bb_ymax"]
+    df[num_cols] = df[num_cols].astype(int)
 
     # save CSV
     with open(output_uri, "wb") as f:
