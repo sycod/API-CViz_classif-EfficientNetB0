@@ -74,6 +74,18 @@ def create_img_db(img_dir, annot_dir, output_uri) -> pd.DataFrame:
                 pattern = f'<{tag}>(.*?)</{tag}>'
                 # store result in a list
                 annot_infos.append(re.search(pattern, annot_content, re.DOTALL).group(1))
+                
+                
+                # 🚧 treat  == "%s"
+                # 🚧 treat  == "%s"
+                # 🚧 treat  == "%s"
+                # 🚧 treat  == "%s"
+                # 🚧 treat  == "%s"
+                # 🚧 treat  == "%s"
+                # 🚧 treat  == "%s"
+                # 🚧 treat  == "%s"
+
+
 
             # add image URI
             annot_infos.append(img_uri)
