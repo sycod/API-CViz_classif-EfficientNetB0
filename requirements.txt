@@ -10,8 +10,9 @@ pytest                  # unit tests
 pytest-cov              # unit tests, cover a specific function
 python-dotenv           # Environment variables
 pyyaml                  # YAML support
-scikit-learn            # ML must-have
 seaborn                 # plots
+scikit-learn            # ML must-have
+scikit-image            # scikit learn images
 streamlit               # cool Python GUI
 # tensorflow              # DL, CPU only
 tensorflow[and-cuda]    # DL with GPU
