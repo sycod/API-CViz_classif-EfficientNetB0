@@ -15,7 +15,7 @@ seaborn                 # plots
 scikit-learn            # ML must-have
 scikit-image            # scikit learn images
 streamlit               # cool Python GUI
-# tensorflow              # DL, CPU only
+tensorflow              # DL, CPU only
 tensorflow[and-cuda]    # DL with GPU
 # torch                   # DL (pytorch)
 # transformers            # Hugging Face (models, etc.)
