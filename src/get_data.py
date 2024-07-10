@@ -13,16 +13,16 @@ def get_tar_and_extract(url, output_directory) -> None:
     response = requests.get(url)
 
     os.makedirs(output_directory, exist_ok=True)
-    
+
     # temporary archive
     temp_file = os.path.join(output_directory, "temp.tar")
     with open(temp_file, "wb") as file:
         file.write(response.content)
-    
+
     # extract archive
     with tarfile.open(temp_file, "r") as tar:
         tar.extractall(path=output_directory)
-    
+
     # remove archive
     os.remove(temp_file)
 
@@ -30,7 +30,7 @@ def get_tar_and_extract(url, output_directory) -> None:
 def create_img_db(img_dir, annot_dir, output_uri) -> pd.DataFrame:
     """Create image and annotation database and export it to CSV file"""
     annot_infos_list = []
-    
+
     # read folder and create dataframe
     breeds_dir = os.listdir(annot_dir)
     # features as they appear in annotation files
@@ -61,22 +61,24 @@ def create_img_db(img_dir, annot_dir, output_uri) -> pd.DataFrame:
 
             annot_infos = []
             # read file
-            with open(os.path.join(annot_dir, breed, annot), 'r', encoding='utf-8') as f:
+            with open(
+                os.path.join(annot_dir, breed, annot), "r", encoding="utf-8"
+            ) as f:
                 annot_content = f.read()
 
             # loop over features & store regex result in a list
             for tag in annot_tags:
-                pattern = f'<{tag}>(.*?)</{tag}>'
+                pattern = f"<{tag}>(.*?)</{tag}>"
                 result = re.search(pattern, annot_content, re.DOTALL).group(1)
                 # bad filenames == "%s" (ID) -> replace by ID available in img_uri
                 if tag == "filename" and result == "%s":
                     result = img_uri.split("/")[-1][:-4]
 
                 annot_infos.append(result)
-                
+
             # add image URI
             annot_infos.append(img_uri)
-            
+
             # add list to annotations info list
             annot_infos_list.append(annot_infos)
 
