@@ -5,3 +5,6 @@ data:
   img_db_uri: "img_db.csv"
   train_dir: "train"
   test_dir: "test"
+
+log:
+  log_dir: "logs"
