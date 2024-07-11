@@ -3,3 +3,5 @@ data:
   img_dir: "Images"
   annot_dir: "Annotation"
   img_db_uri: "img_db.csv"
+  train_dir: "train"
+  test_dir: "test"
