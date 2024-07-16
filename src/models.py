@@ -10,12 +10,50 @@ import time
 import numpy as np
 from sklearn.metrics import confusion_matrix
 from keras.utils import image_dataset_from_directory
-from tensorflow.keras.callbacks import Callback, TensorBoard
+from keras.layers import RandomFlip, RandomRotation, RandomZoom
+from keras.layers import GaussianNoise, RandomContrast, RandomBrightness
+from tensorflow.keras.callbacks import Callback, TensorBoard, EarlyStopping
 import tensorflow as tf
 
 # images & data viz
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+
+class ConditionalAugmentation(tf.keras.layers.Layer):
+    def __init__(self, rate=0.2, **kwargs):
+        super(ConditionalAugmentation, self).__init__(**kwargs)
+        self.rate = rate
+        self.flip = RandomFlip("horizontal")
+        self.rotation = RandomRotation(0.25)
+        self.zoom = RandomZoom(0.1)
+        self.noise = GaussianNoise(0.1)
+        self.contrast = RandomContrast(0.1)
+        self.brightness = RandomBrightness(0.1)
+
+    def call(self, inputs, training=None):
+        if training:
+            x = inputs
+            x = tf.cond(
+                tf.random.uniform(()) < self.rate, lambda: self.flip(x), lambda: x
+            )
+            x = tf.cond(
+                tf.random.uniform(()) < self.rate, lambda: self.rotation(x), lambda: x
+            )
+            x = tf.cond(
+                tf.random.uniform(()) < self.rate, lambda: self.zoom(x), lambda: x
+            )
+            x = tf.cond(
+                tf.random.uniform(()) < self.rate, lambda: self.noise(x), lambda: x
+            )
+            x = tf.cond(
+                tf.random.uniform(()) < self.rate, lambda: self.contrast(x), lambda: x
+            )
+            x = tf.cond(
+                tf.random.uniform(()) < self.rate, lambda: self.brightness(x), lambda: x
+            )
+            return x
+        return inputs
 
 
 def evaluate_model(
@@ -107,6 +145,9 @@ def evaluate_model(
             self.total_time = f"Total train time: {self.tot_time_sec // 60 :.0f}'{self.tot_time_sec % 60 :.0f}s"
 
     timing_callback = TimingCallback()
+    early_stopping = EarlyStopping(
+        monitor="val_loss", patience=10, restore_best_weights=True
+    )
 
     tensorboard_callback = TensorBoard(
         log_dir=log_dir,
@@ -122,7 +163,7 @@ def evaluate_model(
         train_ds,
         validation_data=val_ds,
         epochs=n_epochs,
-        callbacks=[timing_callback, tensorboard_callback],
+        callbacks=[timing_callback, early_stopping, tensorboard_callback],
     )
 
     # EVALUATE ON TEST DATASET
