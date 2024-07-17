@@ -104,7 +104,7 @@ def evaluate_model(
     if not os.path.exists(CHKPT_DIR):
         os.makedirs(CHKPT_DIR)
     chkpt_name = model_name + ".weights.h5"
-    chkpt_uri = CHKPT_DIR + chkpt_name
+    chkpt_uri = os.path.join(CHKPT_DIR, chkpt_name)
 
     model_config = f"""
     | Config | Value |
@@ -153,7 +153,7 @@ def evaluate_model(
             self.total_time = f"Total train time: {self.tot_time_sec // 60 :.0f}'{self.tot_time_sec % 60 :.0f}s"
 
     timing_callback = TimingCallback()
-    checkpoint = ModelCheckpoint(chkpt_name, save_best_only=True, save_weights_only=True)
+    checkpoint = ModelCheckpoint(chkpt_uri, save_best_only=True, save_weights_only=True)
     # early_stopping = EarlyStopping(
     #     monitor="val_loss", patience=10, restore_best_weights=True
     # )
@@ -195,8 +195,7 @@ def evaluate_model(
         conf_matrix,
         annot=True,
         fmt="d",
-        cmap="Oranges",
-        # cmap="Blues",
+        cmap="Blues",
         xticklabels=test_ds.class_names,
         yticklabels=test_ds.class_names,
     )
