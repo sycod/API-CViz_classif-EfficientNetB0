@@ -5,6 +5,7 @@ data:
   img_db_uri: "img_db.csv"
   train_dir: "train"
   test_dir: "test"
+  checkpoint_dir : "model_chkpts"
 
 log:
   log_dir: "logs"

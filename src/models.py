@@ -12,7 +12,8 @@ from sklearn.metrics import confusion_matrix
 from keras.utils import image_dataset_from_directory
 from keras.layers import RandomFlip, RandomRotation, RandomZoom
 from keras.layers import GaussianNoise, RandomContrast, RandomBrightness
-from tensorflow.keras.callbacks import Callback, TensorBoard, EarlyStopping
+from tensorflow.keras.callbacks import Callback, TensorBoard
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 import tensorflow as tf
 
 # images & data viz
@@ -62,6 +63,7 @@ def evaluate_model(
     TRAIN_DIR,
     TEST_DIR,
     LOG_DIR,
+    CHKPT_DIR,
     model_name="raw_model",
     input_size=(224, 224),
     batch_size=32,
@@ -99,6 +101,11 @@ def evaluate_model(
         batch_size=batch_size,  # tensor shape[0]
     )
 
+    if not os.path.exists(CHKPT_DIR):
+        os.makedirs(CHKPT_DIR)
+    chkpt_name = model_name + ".weights.h5"
+    chkpt_uri = CHKPT_DIR + chkpt_name
+
     model_config = f"""
     | Config | Value |
     |:---:|:---:|
@@ -109,6 +116,7 @@ def evaluate_model(
     | **optimizer** | {optimizer} |
     | **loss** | {loss} |
     | **metrics** | {metrics} |
+    | **best weights URI** | {chkpt_uri} |
     """
 
     # set log folder
@@ -145,9 +153,10 @@ def evaluate_model(
             self.total_time = f"Total train time: {self.tot_time_sec // 60 :.0f}'{self.tot_time_sec % 60 :.0f}s"
 
     timing_callback = TimingCallback()
-    early_stopping = EarlyStopping(
-        monitor="val_loss", patience=10, restore_best_weights=True
-    )
+    checkpoint = ModelCheckpoint(chkpt_name, save_best_only=True, save_weights_only=True)
+    # early_stopping = EarlyStopping(
+    #     monitor="val_loss", patience=10, restore_best_weights=True
+    # )
 
     tensorboard_callback = TensorBoard(
         log_dir=log_dir,
@@ -163,11 +172,12 @@ def evaluate_model(
         train_ds,
         validation_data=val_ds,
         epochs=n_epochs,
-        callbacks=[timing_callback, early_stopping, tensorboard_callback],
+        callbacks=[timing_callback, checkpoint, tensorboard_callback],
     )
 
     # EVALUATE ON TEST DATASET
     logging.info("🧐 evaluating model")
+    model.load_weights(chkpt_uri)
     test_loss, test_acc = model.evaluate(test_ds)
     predictions = model.predict(test_ds)
 
@@ -185,7 +195,8 @@ def evaluate_model(
         conf_matrix,
         annot=True,
         fmt="d",
-        cmap="Blues",
+        cmap="Oranges",
+        # cmap="Blues",
         xticklabels=test_ds.class_names,
         yticklabels=test_ds.class_names,
     )
