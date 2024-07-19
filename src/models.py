@@ -70,7 +70,7 @@ def evaluate_model(
     n_epochs=10,
     optimizer="adam",
     loss="sparse_categorical_crossentropy",
-    metrics=["accuracy"],
+    metrics=["precision", "accuracy"],
 ) -> tuple:
     """Train, evaluate and log model from architecture and configuration
 
@@ -154,9 +154,9 @@ def evaluate_model(
 
     timing_callback = TimingCallback()
     checkpoint = ModelCheckpoint(chkpt_uri, save_best_only=True, save_weights_only=True)
-    # early_stopping = EarlyStopping(
-    #     monitor="val_loss", patience=10, restore_best_weights=True
-    # )
+    early_stopping = EarlyStopping(
+        monitor="val_loss", patience=10, restore_best_weights=True
+    )
 
     tensorboard_callback = TensorBoard(
         log_dir=log_dir,
@@ -172,13 +172,13 @@ def evaluate_model(
         train_ds,
         validation_data=val_ds,
         epochs=n_epochs,
-        callbacks=[timing_callback, checkpoint, tensorboard_callback],
+        callbacks=[timing_callback, checkpoint, early_stopping, tensorboard_callback],
     )
 
     # EVALUATE ON TEST DATASET
     logging.info("🧐 evaluating model")
     model.load_weights(chkpt_uri)
-    test_loss, test_acc = model.evaluate(test_ds)
+    test_loss, *test_metrics = model.evaluate(test_ds)
     predictions = model.predict(test_ds)
 
     # CONFUSION MATRIX
@@ -200,8 +200,9 @@ def evaluate_model(
         yticklabels=test_ds.class_names,
     )
     plt.suptitle(f"{model_name} model", color="blue", weight="bold")
+    title_metrics = (" - ").join([f"{m[:3]}.: {v :.02f}" for m, v in zip(metrics, test_metrics)])
     plt.title(
-        f"acc. {test_acc :.02f} - loss {test_loss :.02f} - {timing_callback.total_time}",
+        f"{title_metrics} - loss {test_loss :.02f} - {timing_callback.total_time}",
         fontsize=10,
     )
     plt.xlabel("Predictions", color="red", weight="bold")
