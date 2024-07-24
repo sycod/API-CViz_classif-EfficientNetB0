@@ -70,7 +70,7 @@ def evaluate_model(
     n_epochs=10,
     optimizer="adam",
     loss="sparse_categorical_crossentropy",
-    metrics=["precision", "accuracy"],
+    metrics=["accuracy", "categorical_accuracy"],
 ) -> tuple:
     """Train, evaluate and log model from architecture and configuration
 
@@ -107,16 +107,16 @@ def evaluate_model(
     chkpt_uri = os.path.join(CHKPT_DIR, chkpt_name)
 
     model_config = f"""
-    | Config | Value |
-    |:---:|:---:|
-    | **model name** | {model_name} |
-    | **input size** | {input_size} |
-    | **batch size** | {batch_size} |
-    | **n epochs** | {n_epochs} |
-    | **optimizer** | {optimizer} |
-    | **loss** | {loss} |
-    | **metrics** | {metrics} |
-    | **best weights URI** | {chkpt_uri} |
+| Config | Value |
+|:---:|:---:|
+| **model name** | {model_name} |
+| **input size** | {input_size} |
+| **batch size** | {batch_size} |
+| **n epochs** | {n_epochs} |
+| **optimizer** | {optimizer} |
+| **loss** | {loss} |
+| **metrics** | {metrics} |
+| **best weights URI** | {chkpt_uri} |
     """
 
     # set log folder
@@ -153,7 +153,11 @@ def evaluate_model(
             self.total_time = f"Total train time: {self.tot_time_sec // 60 :.0f}'{self.tot_time_sec % 60 :.0f}s"
 
     timing_callback = TimingCallback()
-    checkpoint = ModelCheckpoint(chkpt_uri, save_best_only=True, save_weights_only=True)
+    checkpoint = ModelCheckpoint(
+        chkpt_uri,
+        save_best_only=True,
+        save_weights_only=True,
+    )
     early_stopping = EarlyStopping(
         monitor="val_loss", patience=10, restore_best_weights=True
     )
@@ -200,7 +204,9 @@ def evaluate_model(
         yticklabels=test_ds.class_names,
     )
     plt.suptitle(f"{model_name} model", color="blue", weight="bold")
-    title_metrics = (" - ").join([f"{m[:3]}.: {v :.02f}" for m, v in zip(metrics, test_metrics)])
+    title_metrics = (" - ").join(
+        [f"{m[:3]}.: {v :.02f}" for m, v in zip(metrics, test_metrics)]
+    )
     plt.title(
         f"{title_metrics} - loss {test_loss :.02f} - {timing_callback.total_time}",
         fontsize=10,
