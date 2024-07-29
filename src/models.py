@@ -8,7 +8,7 @@ import time
 
 # DS, ML & DL
 import numpy as np
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, classification_report
 from keras.utils import image_dataset_from_directory
 from keras.layers import RandomFlip, RandomRotation, RandomZoom
 from keras.layers import GaussianNoise, RandomContrast, RandomBrightness
@@ -95,7 +95,7 @@ def evaluate_model(
         TEST_DIR,
         labels="inferred",  # class names upon folders structure
         label_mode="int",  # integer encoding
-        shuffle=True,  # shuffles images
+        shuffle=False,  # shuffles images
         seed=42,  # random seed
         image_size=input_size,  # automatic resizing
         batch_size=batch_size,  # tensor shape[0]
@@ -239,9 +239,9 @@ def evaluate_model(
 
 def eval_pretrained_model(
     model,
-    model_arch,
-    TRAIN_DIR,
-    TEST_DIR,
+    train_ds,
+    val_ds,
+    test_ds,
     LOG_DIR,
     CHKPT_DIR,
     model_name="raw_model",
@@ -250,36 +250,12 @@ def eval_pretrained_model(
     n_epochs=10,
     optimizer="adam",
     loss="sparse_categorical_crossentropy",
-    metrics=["accuracy", "categorical_accuracy"],
+    metrics=["accuracy"],
 ) -> tuple:
     """Train, evaluate and log model from architecture and configuration
 
     Return model, history and plot confusion matrix
     """
-
-    # DATA SETS
-    logging.info("🧑‍🍳 preparing datasets")
-    train_ds, val_ds = image_dataset_from_directory(
-        TRAIN_DIR,
-        labels="inferred",  # class names upon folders structure
-        label_mode="int",  # integer encoding
-        validation_split=0.2,  # train / val split
-        subset="both",  # returns both train and val datasets
-        shuffle=True,  # shuffles images
-        seed=42,  # random seed
-        image_size=input_size,  # automatic resizing
-        batch_size=batch_size,  # tensor shape[0]
-    )
-
-    test_ds = image_dataset_from_directory(
-        TEST_DIR,
-        labels="inferred",  # class names upon folders structure
-        label_mode="int",  # integer encoding
-        shuffle=True,  # shuffles images
-        seed=42,  # random seed
-        image_size=input_size,  # automatic resizing
-        batch_size=batch_size,  # tensor shape[0]
-    )
 
     if not os.path.exists(CHKPT_DIR):
         os.makedirs(CHKPT_DIR)
@@ -339,7 +315,7 @@ def eval_pretrained_model(
         save_weights_only=True,
     )
     early_stopping = EarlyStopping(
-        monitor="val_loss", patience=10, restore_best_weights=True
+        monitor="val_loss", patience=4, restore_best_weights=True
     )
 
     tensorboard_callback = TensorBoard(
@@ -373,6 +349,20 @@ def eval_pretrained_model(
     predicted_classes = np.argmax(predictions, axis=1)
     # compute confusion matrix
     conf_matrix = confusion_matrix(true_labels, predicted_classes)
+    # precision & F1 score
+    report = classification_report(
+        true_labels,
+        predicted_classes,
+        target_names=test_ds.class_names,
+    )
+    report_dict = classification_report(
+        true_labels,
+        predicted_classes,
+        target_names=test_ds.class_names,
+        output_dict=True,
+    )
+    print(report)
+
     # plot it
     conf_mtx_plot = plt.figure(figsize=(6, 4))
     sns.heatmap(
@@ -384,11 +374,8 @@ def eval_pretrained_model(
         yticklabels=test_ds.class_names,
     )
     plt.suptitle(f"{model_name} model", color="blue", weight="bold")
-    title_metrics = (" - ").join(
-        [f"{m[:3]}.: {v :.02f}" for m, v in zip(metrics, test_metrics)]
-    )
     plt.title(
-        f"{title_metrics} - loss {test_loss :.02f} - {timing_callback.total_time}",
+        f"acc. {report_dict['accuracy'] :.02f} - loss {test_loss :.02f} - {timing_callback.total_time}",
         fontsize=10,
     )
     plt.xlabel("Predictions", color="red", weight="bold")
@@ -408,7 +395,6 @@ def eval_pretrained_model(
     file_writer = tf.summary.create_file_writer(log_dir + "/metrics")
     with file_writer.as_default():
         tf.summary.text("configuration", model_config, step=0)
-        tf.summary.text("architecture", model_arch, step=0)
         tf.summary.text("total_training_time", timing_callback.total_time, step=0)
         for i, time_per_epoch in enumerate(timing_callback.logs):
             tf.summary.scalar("time_per_epoch", time_per_epoch, step=i + 1)
