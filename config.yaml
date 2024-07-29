@@ -9,3 +9,7 @@ data:
 
 log:
   log_dir: "logs"
+
+models:
+  classes_3: ["pug", "Siberian_husky", "borzoi"]
+  classes_10: ["pug", "Siberian_husky", "borzoi"]
