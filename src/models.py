@@ -60,8 +60,9 @@ class ConditionalAugmentation(tf.keras.layers.Layer):
 def evaluate_model(
     model,
     model_arch,
-    TRAIN_DIR,
-    TEST_DIR,
+    train_ds,
+    val_ds,
+    test_ds,
     LOG_DIR,
     CHKPT_DIR,
     model_name="raw_model",
@@ -76,30 +77,6 @@ def evaluate_model(
 
     Return model, history and plot confusion matrix
     """
-
-    # DATA SETS
-    logging.info("🧑‍🍳 preparing datasets")
-    train_ds, val_ds = image_dataset_from_directory(
-        TRAIN_DIR,
-        labels="inferred",  # class names upon folders structure
-        label_mode="int",  # integer encoding
-        validation_split=0.2,  # train / val split
-        subset="both",  # returns both train and val datasets
-        shuffle=True,  # shuffles images
-        seed=42,  # random seed
-        image_size=input_size,  # automatic resizing
-        batch_size=batch_size,  # tensor shape[0]
-    )
-
-    test_ds = image_dataset_from_directory(
-        TEST_DIR,
-        labels="inferred",  # class names upon folders structure
-        label_mode="int",  # integer encoding
-        shuffle=False,  # shuffles images
-        seed=42,  # random seed
-        image_size=input_size,  # automatic resizing
-        batch_size=batch_size,  # tensor shape[0]
-    )
 
     if not os.path.exists(CHKPT_DIR):
         os.makedirs(CHKPT_DIR)
@@ -159,7 +136,7 @@ def evaluate_model(
         save_weights_only=True,
     )
     early_stopping = EarlyStopping(
-        monitor="val_loss", patience=10, restore_best_weights=True
+        monitor="val_loss", patience=6, restore_best_weights=True
     )
 
     tensorboard_callback = TensorBoard(
@@ -193,6 +170,20 @@ def evaluate_model(
     predicted_classes = np.argmax(predictions, axis=1)
     # compute confusion matrix
     conf_matrix = confusion_matrix(true_labels, predicted_classes)
+    # precision & F1 score
+    report = classification_report(
+        true_labels,
+        predicted_classes,
+        target_names=test_ds.class_names,
+    )
+    report_dict = classification_report(
+        true_labels,
+        predicted_classes,
+        target_names=test_ds.class_names,
+        output_dict=True,
+    )
+    print(report)
+
     # plot it
     conf_mtx_plot = plt.figure(figsize=(6, 4))
     sns.heatmap(
@@ -204,11 +195,8 @@ def evaluate_model(
         yticklabels=test_ds.class_names,
     )
     plt.suptitle(f"{model_name} model", color="blue", weight="bold")
-    title_metrics = (" - ").join(
-        [f"{m[:3]}.: {v :.02f}" for m, v in zip(metrics, test_metrics)]
-    )
     plt.title(
-        f"{title_metrics} - loss {test_loss :.02f} - {timing_callback.total_time}",
+        f"acc. {report_dict['accuracy'] :.02f} - loss {test_loss :.02f} - {timing_callback.total_time}",
         fontsize=10,
     )
     plt.xlabel("Predictions", color="red", weight="bold")
@@ -252,7 +240,7 @@ def eval_pretrained_model(
     loss="sparse_categorical_crossentropy",
     metrics=["accuracy"],
 ) -> tuple:
-    """Train, evaluate and log model from architecture and configuration
+    """Train, evaluate and log pre-trained model from architecture and configuration
 
     Return model, history and plot confusion matrix
     """
