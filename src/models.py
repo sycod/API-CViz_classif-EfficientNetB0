@@ -303,7 +303,7 @@ def eval_pretrained_model(
         save_weights_only=True,
     )
     early_stopping = EarlyStopping(
-        monitor="val_loss", patience=4, restore_best_weights=True
+        monitor="val_loss", patience=10, restore_best_weights=True
     )
 
     tensorboard_callback = TensorBoard(
