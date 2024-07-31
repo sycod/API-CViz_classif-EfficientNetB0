@@ -6,7 +6,7 @@ import streamlit as st
 import dill as pickle
 
 # home made
-# from src.api_utils import xxxxxxxxx
+# from src.app_utils import xxxxxxxxx
 
 
 # CONFIG
