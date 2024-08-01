@@ -14,3 +14,7 @@ log:
 models:
   classes_3: ["pug", "Siberian_husky", "borzoi"]
   classes_10: ["Leonberg", "basenji", "malamute", "papillon", "chow", "dhole", "dingo", "Cardigan", "Brabancon_griffon", "boxer"]
+
+app_data:
+  local_path: "app_data"
+  weights: "EfficientNetB0_10.weights.h5"
