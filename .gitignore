@@ -169,4 +169,4 @@ mlruns/
 data/
 
 # TensorBoard logs
-# logs/
+logs/
