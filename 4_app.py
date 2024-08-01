@@ -34,7 +34,7 @@ def launch_api():
     # GUI
     st.set_page_config(
         page_title="Which breed is that dog?",
-        page_icon="api_favicon.ico",
+        page_icon="app_favicon.ico",
         layout="centered",
     )
 

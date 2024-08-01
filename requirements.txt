@@ -18,5 +18,3 @@ streamlit               # cool Python GUI
 tensorboard             # DL monitoring
 tensorflow              # DL, CPU only
 tensorflow[and-cuda]    # DL with GPU
-# torch                   # DL (pytorch)
-# transformers            # Hugging Face (models, etc.)
