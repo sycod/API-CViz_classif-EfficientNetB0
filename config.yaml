@@ -18,5 +18,6 @@ models:
 app_data:
   local_path: "app_data"
   model: "EfficientNetB0_app.keras"
+  onnx: "EfficientNetB0_app.onnx"
   # breeds are not in the same order as original classes
   breeds: ['Brabancon_griffon', 'Cardigan', 'Leonberg', 'basenji', 'boxer', 'chow', 'dhole', 'dingo', 'malamute', 'papillon']
