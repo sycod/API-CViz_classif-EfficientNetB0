@@ -53,7 +53,7 @@ def launch_api():
                 > Model is trained upon the **Stanford Dogs Dataset**.  
                 > It is able to detect **10 dogs breeds**: *{(', ').join(BREEDS)}*  
                 > 
-                > ➡️ For better results, use **1 dog per image** -- only **JPG and PNG** files allowed -- max size: 200MB"""
+                > ➡️ For better results, use **1 dog per image** -- only **JPG** files allowed -- max size: 200MB"""
     )
     st.write("#### 👇 **Upload your dog image** to predict its breed 👇")
 
@@ -62,7 +62,7 @@ def launch_api():
         "",
         # "👇 Upload your dog image 👇",
         accept_multiple_files=False,
-        type=["png", "jpg", "jpeg"],
+        type=["jpg", "jpeg"],
         # on_change=on_upload,
     )
 
